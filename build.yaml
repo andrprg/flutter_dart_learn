@@ -1,0 +1,7 @@
+targets:
+  $default:
+    sources:
+      - lib/**
+      - test/**
+      - 6_state_management/**
+      - $package$

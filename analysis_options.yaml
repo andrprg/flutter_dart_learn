@@ -1,0 +1,36 @@
+include: package:flutter_lints/flutter.yaml
+
+linter:
+  rules:
+    # Обязательное объявление типов возвращаемых значений
+    always_declare_return_types: true
+    
+    # Использование const где это возможно (очень важно для Flutter)
+    prefer_const_constructors: true
+    prefer_const_declarations: true
+    prefer_const_literals_to_create_immutables: true
+    
+    # Использование final для локальных переменных
+    prefer_final_locals: true
+    
+    # Запрет на пустые блоки catch
+    empty_catches: true
+    
+    # Требование запятых в конце (полезно для форматирования Flutter UI)
+    require_trailing_commas: true
+    
+    # Избегание использования dynamic где это возможно
+    avoid_annotating_with_dynamic: true
+    
+    # Сортировка импортов
+    directives_ordering: true
+    
+    # Избегание пустых else
+    avoid_empty_else: true
+
+analyzer:
+  errors:
+    # Делаем предупреждения о пропущенных возвращаемых типах ошибками
+    always_declare_return_types: error
+    # Делаем предупреждения о неиспользовании const ошибками (строгий режим для обучения)
+    prefer_const_constructors: warning

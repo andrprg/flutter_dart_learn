@@ -1,0 +1,160 @@
+═══════════════════════════════════════════════════════════════════
+  ДОРОЖНАЯ КАРТА ИЗУЧЕНИЯ DART (при опыте в TypeScript)
+═══════════════════════════════════════════════════════════════════
+
+У тебя уже есть база: типы, ООП, async/await, замыкания, коллекции.
+Ниже — что перенести из TS, что изучить заново и в каком порядке.
+
+
+─── ШПАРГАЛКА: TYPESCRIPT → DART (учитываем твой опыт) ─────────────
+
+  TypeScript                    →  Dart
+  ─────────────────────────────────────────────────────────────────
+  let x = 1                     →  var x = 1;  или  final x = 1;
+  const obj = {}                →  final obj = {};  (const — только compile-time)
+  number / string / boolean     →  int, double / String / bool
+  number | null                 →  int?
+  undefined, optional chaining  →  нет undefined; ?. как в TS
+  type / interface              →  class, abstract class (interface нет)
+  Promise<T>                    →  Future<T>
+  async/await                   →  то же самое
+  Array<T>                      →  List<T>
+  Record<K,V> / object          →  Map<K,V>
+  .map(), .filter(), .reduce()  →  .map(), .where(), .reduce()
+  npm / package.json            →  pub.dev / pubspec.yaml
+  try/catch                     →  try/on … catch (с типами исключений)
+
+  Можно пройти быстрее: типы, классы, async, коллекции, JSON.
+  Уделить внимание: null safety, mixins, extensions, Stream, каскад (..).
+
+
+─── ЭТАП 1: Быстрый старт (1–2 дня) ───────────────────────────────
+
+✓ Синтаксис и типы
+  • Переменные: var, final, const (const в Dart строже, чем в TS).
+  • Типы: int, double, num, String, bool — всё как в TS, но без undefined/null в старом смысле; есть null safety.
+  • Строки: одинарные/двойные кавычки, интерполяция "$var" и "${expr}".
+  • Списки List<T> и словари Map<K,V> — аналог Array и Record/Object.
+
+✓ Null safety (важное отличие от TS)
+  • Типы по умолчанию non-nullable; для nullable — суффикс ? (int?).
+  • ! для утверждения «здесь не null» (аналог non-null assertion в TS).
+  • Операторы ??, ??= — как в TS.
+
+✓ Функции
+  • Обычные и стрелочные (=>).
+  • Позиционные и именованные аргументы (name: value).
+  • Параметры по умолчанию.
+
+Что делать: написать 2–3 маленьких скрипта (калькулятор, работа со списками/мапами), сравнить с TS в голове.
+
+
+─── ЭТАП 2: Классы и ООП (2–3 дня) ───────────────────────────────
+
+✓ Классы
+  • Конструкторы: короткая форма с this.field, именованные конструкторы (ClassName.name()).
+  • Наследование: extends, super; переопределение с @override.
+  • Интерфейсы: implicit (класс реализует интерфейс просто объявлением методов), explicit — abstract class / interface.
+
+✓ Отличия от TypeScript
+  • Нет interface как отдельной конструкции — используют abstract class или class implements.
+  • Mixins (with) вместо миксинов/композиции в TS — изучить отдельно.
+  • Геттеры/сеттеры: get/set как в TS, синтаксис чуть иной.
+  • Фабричные конструкторы: factory — аналог статических фабрик.
+
+✓ Enum
+  • Enhanced enums (Dart 2.17+): enum с полями, конструкторами, методами — мощнее, чем в TS.
+
+Что делать: описать доменную модель (например, пользователи, заказы) с наследованием и одним mixin.
+
+
+─── ЭТАП 3: Асинхронность (1–2 дня) ───────────────────────────────
+
+✓ Future и async/await
+  • Future<T> — аналог Promise<T>; async/await работают так же.
+  • Future.error, Future.value — как reject/resolve.
+  • .then(), .catchError() — по необходимости, предпочтительно async/await.
+
+✓ Stream
+  • Stream<T> — аналог AsyncIterable/Observable; однопроходные данные (события, логи).
+  • await for — цикл по Stream.
+  • StreamController, broadcast streams — для создания и шаринга потоков.
+
+Что делать: запрос к API (http-пакет), разбор JSON; один пример со Stream (например, таймер или логи).
+
+
+─── ЭТАП 4: Особенности Dart (2–3 дня) ────────────────────────────
+
+✓ Generics
+  • Как в TS: List<int>, Map<String, dynamic>; ограничения через extends.
+
+✓ Коллекции и итерации
+  • List, Set, Map; .map(), .where(), .reduce() и т.д. — похоже на JS/TS.
+  • Spread: [...list], {...map}; collection-if, collection-for внутри списков/мап.
+
+✓ Обработка ошибок
+  • try/catch/finally; типы в catch (on SomeException catch (e, s)).
+  • Свои исключения через implements Exception.
+
+✓ Extension methods
+  • Добавление методов к существующим типам без наследования — в TS такого нет, стоит освоить.
+
+✓ Операторы и перегрузка
+  • operator (+, [], ==) — перегрузка операторов для своих классов.
+  • cascade (..) — цепочка вызовов на одном объекте без сохранения в переменную.
+
+✓ Метаданные и аннотации
+  • @override, @deprecated и кастомные аннотации — похоже на декораторы в TS, но проще.
+
+Что делать: написать утилиты с extension-методами; один класс с перегруженными операторами и каскадом.
+
+
+─── ЭТАП 5: Проект и экосистема (постоянно) ───────────────────────
+
+✓ Инструменты
+  • dart create, dart run, dart test.
+  • dart analyze / dart fix — линтер и автофиксы.
+  • pub.dev — пакеты (аналог npm); pubspec.yaml — аналог package.json.
+
+✓ Тестирование
+  • test-пакет: test(), expect(), group(); моки и фикстуры.
+  • Юнит-тесты для логики; интеграционные при необходимости.
+
+✓ Если цель — Flutter
+  • После уверенного Dart: виджеты, состояние (setState, Provider/Riverpod и т.д.), навигация, работа с API в приложении.
+
+Что делать: один консольный проект с зависимостями из pub.dev, тестами и скриптами в pubspec.yaml.
+
+
+─── ЧЕКЛИСТ «ПЕРЕНЕСЁННО ИЗ TYPESCRIPT» ──────────────────────────
+
+  [ ] Типы и вывод типов
+  [ ] Null safety (привыкнуть к ? и !)
+  [ ] Классы, наследование, абстракции
+  [ ] async/await и Future
+  [ ] Коллекции и методы итерации
+  [ ] Работа с JSON (dart:convert)
+
+
+─── ЧЕКЛИСТ «УНИКАЛЬНОЕ В DART» ───────────────────────────────────
+
+  [ ] final vs const и const-конструкторы
+  [ ] Именованные параметры и конструкторы
+  [ ] Mixins (with)
+  [ ] Extension methods
+  [ ] Stream и await for
+  [ ] Cascade operator (..)
+  [ ] Enhanced enums
+  [ ] Изоляты (Isolate) при необходимости
+
+
+─── РЕСУРСЫ ────────────────────────────────────────────────────────
+
+  • Официальная документация: dart.dev
+  • Language tour: dart.dev/guides/language/language-tour
+  • Codelabs и туториалы: dart.dev/codelabs
+  • Effective Dart: dart.dev/guides/language/effective-dart
+
+═══════════════════════════════════════════════════════════════════
+  Ориентировочно: 1–2 недели до уверенного Dart; затем Flutter по желанию.
+═══════════════════════════════════════════════════════════════════
