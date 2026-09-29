@@ -3,6 +3,7 @@
 Этот маршрут помогает проходить проект последовательно: сначала язык и базовые структуры данных, затем асинхронность, Flutter UI, state management, функциональный стиль и мини-приложения.
 
 В каждом модуле также есть:
+- `theory.md` — шпаргалка по теме (прочитай перед задачами);
 - `interview_questions.md` — типичные вопросы с собеседований по теме;
 - `interview_answers.md` — ответы для самопроверки (сначала ответь сам).
 
@@ -10,15 +11,15 @@
 
 Цель: уверенно писать чистую логику без Flutter.
 
-1. `1_dart_core/null_safety/null_safety_task.dart`
-2. `1_dart_core/oop/oop_task.dart`
-3. `1_dart_core/generics/generics_task.dart`
-4. `1_dart_core/List/list_task.dart`
-5. `1_dart_core/map_set/map_set_task.dart`
-6. `1_dart_core/strings/string_task.dart`
-7. `1_dart_core/json/json_task.dart`
+1. `1_dart_core/null_safety/theory.md` + `null_safety_task.dart`
+2. `1_dart_core/oop/theory.md` + `oop_task.dart`
+3. `1_dart_core/generics/theory.md` + `generics_task.dart`
+4. `1_dart_core/List/theory.md` + `list_task.dart`
+5. `1_dart_core/map_set/theory.md` + `map_set_task.dart`
+6. `1_dart_core/strings/theory.md` + `string_task.dart`
+7. `1_dart_core/json/theory.md` + `json_task.dart`
 8. `1_dart_core/dart3_patterns/theory.md` + `patterns_task.dart`
-9. `1_dart_core/eventloop/eventloop_task.dart`
+9. `1_dart_core/eventloop/theory.md` + `eventloop_task.dart`
 
 Что освоить:
 - null safety: `?`, `??`, `??=`, promotion;

@@ -1,0 +1,6 @@
+name: theory_to_html
+description: Generates a single HTML page from all theory.md files.
+environment:
+  sdk: ^3.0.0
+dependencies:
+  markdown: ^7.2.2

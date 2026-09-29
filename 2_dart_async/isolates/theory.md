@@ -1,0 +1,113 @@
+# Шпаргалка: Isolates в Dart
+
+Прочитай перед задачами в `isolates_task.dart`. Isolate — **отдельный isolate с своим heap и event loop**. Общей памяти нет: обмен только сообщениями. Параллельные CPU-задачи — через isolates, не через «потоки с shared state».
+
+## 1. Зачем, если есть async
+
+`async`/`await` **не** снимает нагрузку с UI-потока: долгий синхронный цикл блокирует кадры, таймеры и microtask.
+
+| Уносить в isolate | Оставить на main |
+|---|---|
+| Тяжёлый JSON, фильтр картинок, crypto, большой `sumSquares` | `setState`, мелкий HTTP, SharedPreferences |
+| Ожидаемо **> ~16 ms** на кадр | Короткие операции |
+
+```dart
+bool shouldOffloadToIsolate(String workType) =>
+    {'json_parse_big', 'image_filter', 'crypto'}.contains(workType);
+
+String chooseRunner({required int expectedMs, int thresholdMs = 16}) =>
+    expectedMs > thresholdMs ? 'isolate' : 'main';
+```
+
+## 2. `Isolate.run` (и `compute` во Flutter)
+
+Самый простой путь — one-shot:
+
+```dart
+Future<int> sumSquaresInIsolate(int n) => Isolate.run(() => sumSquares(n));
+
+Future<List<int>> parseIntListInIsolate(String source) =>
+    Isolate.run(() {
+      // jsonDecode и т.п. внутри isolate
+      return (jsonDecode(source) as List).cast<int>();
+    });
+```
+
+| API | Где | Смысл |
+|---|---|---|
+| `Isolate.run` | `dart:isolate` | Создать isolate, выполнить функцию, вернуть Future, убить isolate |
+| `compute` | Flutter (`foundation`) | Обёртка над тем же паттерном для UI-кода |
+
+Ошибка внутри `Isolate.run` **пробрасывается** вызывающему как обычный Future error — лови `try/catch` / `.catchError`.
+
+Параллельно по списку:
+
+```dart
+Future<List<int>> mapSumSquares(List<int> values) =>
+    Future.wait(values.map((n) => Isolate.run(() => sumSquares(n))));
+```
+
+## 3. Сообщения: SendPort / ReceivePort
+
+Долгоживущий worker: главный isolate создаёт `ReceivePort`, передаёт `sendPort` в entrypoint, воркер шлёт свой порт обратно, дальше — запросы/ответы.
+
+```dart
+class WorkerRequest {
+  const WorkerRequest(this.n);
+  final int n;
+}
+
+class WorkerResponse {
+  const WorkerResponse(this.result);
+  final int result;
+}
+
+void workerEntrypoint(SendPort mainSendPort) {
+  final inbox = ReceivePort();
+  mainSendPort.send(inbox.sendPort);
+  inbox.listen((message) {
+    if (message is WorkerRequest) {
+      mainSendPort.send(WorkerResponse(sumSquares(message.n)));
+    }
+  });
+}
+```
+
+Сценарий `runWorkerOnce`: `Isolate.spawn` → дождаться порта воркера → отправить `WorkerRequest` → получить `WorkerResponse` → `isolate.kill()`.
+
+## 4. Что можно и нельзя передавать
+
+Между isolates копируются (или передаются по правилам sendable) сообщения. Практически:
+
+| Безопасно (идея) | Нельзя / опасно |
+|---|---|
+| `int`, `double`, `String`, `bool`, `null` | `BuildContext`, виджеты UI |
+| `List` / `Map` из sendable значений | Замыкания, захватывающие UI-объекты |
+| `SendPort` | Многие «живые» ресурсы (`Socket` как пример из задач) |
+| Простые свои классы из полей выше | Объекты с native/plugin-состоянием |
+
+```dart
+bool canCaptureUiInIsolateClosure() => false; // нельзя тащить UI в closure для Isolate.run
+
+List<String> isolateSafePayloadTypes() =>
+    ['int', 'String', 'List', 'Map', 'SendPort'];
+
+List<String> isolateUnsafePayloadTypes() =>
+    ['BuildContext', 'UiWidget', 'Socket'];
+```
+
+Замыкание для `Isolate.run` / entrypoint должно быть **top-level или static** (или не захватывать небезопасное). Захват `BuildContext`/контроллеров — типичная ошибка.
+
+## 5. Ошибки и Flutter plugins
+
+- В one-shot: исключение → ошибка Future на вызывающей стороне.
+- В worker: лучше слать явный error-message по порту, иначе isolate может умереть молча с точки зрения UI.
+- **Plugins** часто привязаны к main isolate: из воркера нельзя напрямую звать большинство platform channels. Считай на воркере, UI/плагины — на main.
+
+## 6. Зачем это знать
+
+- Isolates ≠ threads с shared memory: нет гонок по объектам, есть стоимость копирования сообщений.
+- Сначала `Isolate.run` для разовых тяжёлых задач; worker — когда аммортизируешь старт isolate.
+- На собесе: когда offload, sendable types, почему нельзя Context, отличие от `compute`.
+
+Дальше: `isolates_task.dart`. После async-модуля — `3_functional_dart_with_fpdart/fpdart/theory.md`.

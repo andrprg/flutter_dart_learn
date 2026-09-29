@@ -1,0 +1,93 @@
+# Шпаргалка: Interview Tasks (как пользоваться)
+
+Модуль `7_interview_tasks` — **34 задачи** в стиле собеседований по Dart и Flutter. Это не новый синтаксис, а тренировка: прочитал условие → написал решение → сверил с эталоном / прогнал тест. Детали и FAQ — в `README.md`.
+
+## 1. Как работать с задачей
+
+1. Открой `task_XX_*.dart`.
+2. Прочитай шапку: уровень, тема, примеры.
+3. Реализуй секцию `// ─── Ваше решение ───` (не подглядывая в эталон).
+4. Проверь:
+   - `dart run 7_interview_tasks/task_XX_....dart` — если есть `main` с кейсами;
+   - или тест из `tests/` (`dart test` / `flutter test`).
+5. Сравни с `// ─── Эталонное решение ───` и вопросыми в комментариях.
+
+Типичная шапка:
+
+```dart
+/// ЗАДАЧА 1 — Проверка палиндрома
+/// Уровень: Junior
+/// Тема: Строки, базовая логика
+```
+
+Не копируй эталон сразу — цель модуля: **самостоятельный ответ**, как на собесе.
+
+## 2. Категории задач
+
+### Dart — основы (Junior)
+
+Палиндром, FizzBuzz, анаграмма, Two Sum, связный список, скобки, бинарный поиск, merge sorted (`01–05`, `25–26`, `28`).
+
+Фокус: циклы, `Map`, строки, O(n), структуры данных.
+
+### Dart — продвинутый (Mid/Senior)
+
+Async/retry, generics + repository, streams/EventBus, isolates, mixins/sealed, JSON-модели, LRU, debounce/throttle, `==`/`copyWith` (`06–10`, `21–22`, `27`, `29`).
+
+Фокус: асинхронность, API-дизайн, производительность алгоритмов.
+
+### Flutter — основы (Junior/Mid)
+
+Stateful counter, InheritedWidget, CustomPainter, анимации, навигация, FutureBuilder, Form, ChangeNotifier (`11–15`, `30–32`).
+
+Фокус: lifecycle, дерево виджетов, базовый state.
+
+### Flutter — продвинутый (Senior)
+
+Riverpod + фильтры, performance (const / ListView.builder / RepaintBoundary), тесты, codegen Riverpod, platform channels, slivers, state restoration, Keys, `mounted` после `await` (`16–20`, `23–24`, `33–34`).
+
+Фокус: архитектура UI, оптимизация, платформа, краевые баги.
+
+## 3. Тесты
+
+В `tests/` — зеркало задач (`test_01_...` ↔ `task_01_...`).
+
+```bash
+# пример Dart
+dart test 7_interview_tasks/tests/test_01_palindrome_test.dart
+
+# пример Flutter
+flutter test 7_interview_tasks/tests/test_11_stateful_counter_test.dart
+```
+
+Сначала решение в task-файле, потом тест. Не наоборот «подогнать под чужой эталон в тесте», если учишься.
+
+## 4. Советы как на собесе
+
+- **Проговорить вслух** подход до кода: ввод → крайние случаи → сложность.
+- Спросить уточнения: регистр? пустая строка? nullable?
+- Для алгоритмов: сначала рабочий O(n²), потом улучшить (Two Sum → `Map`).
+- Для Flutter: объяснить *почему* `const` / `Key` / `mounted`, не только «так принято».
+- После решения — 1–2 альтернативы (Stream vs Future, setState vs Riverpod).
+
+Популярные темы из README: `final`/`const`/`late`, null safety, Future vs Stream, Isolate, Widget→Element→RenderObject, watch/read/listen, RepaintBoundary, debounce vs throttle.
+
+## 5. Маршрут по уровню
+
+| Цель | С чего начать |
+|---|---|
+| Junior Dart | `01–05`, `25`, `26`, `28` |
+| Junior Flutter | `11`, `30–32`, `15` |
+| Mid | `06–08`, `12–14`, `21`, `27`, `29` |
+| Senior | `09`, `16–20`, `17`, `22–24`, `33–34` |
+
+Связь с треком курса: алгоритмы ← `1_dart_core`, async ← `2_dart_async`, UI ← `4`/`5`, state ← `6_state_management`.
+
+## 6. Definition of Done для одной задачи
+
+- [ ] Своё решение без эталона
+- [ ] Крайние случаи (пусто, один элемент, ошибка сети / dispose)
+- [ ] Тест или `main` зелёный
+- [ ] Можешь объяснить big-O / lifecycle / зачем API такой
+
+Дальше по курсу: `8_prompt_engineering` (как решать быстрее с Cursor), `10_mini_apps` (склеить навыки в мини-проекты).
