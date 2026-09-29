@@ -1,4 +1,4 @@
-# 24 задачи с собеседований по Dart и Flutter
+# 34 задачи с собеседований по Dart и Flutter
 
 Задачи сгруппированы по уровню сложности и теме.
 Каждый файл содержит: описание задачи, заготовку для решения и эталонный ответ.
@@ -14,6 +14,9 @@
 | 03 | `task_03_anagram.dart` | Анаграмма (Map, коллекции) | Junior |
 | 04 | `task_04_two_sum.dart` | Two Sum O(n) (Map, алгоритмы) | Junior/Mid |
 | 05 | `task_05_linked_list.dart` | Реверс связного списка (структуры данных) | Junior/Mid |
+| 25 | `task_25_valid_parentheses.dart` | Валидные скобки (стек) | Junior/Mid |
+| 26 | `task_26_binary_search.dart` | Бинарный поиск первого вхождения | Junior/Mid |
+| 28 | `task_28_merge_sorted.dart` | Слияние двух отсортированных списков | Junior/Mid |
 
 ---
 
@@ -28,6 +31,8 @@
 | 10 | `task_10_mixins_extensions.dart` | Mixin, Extension, Sealed classes | Mid/Senior |
 | 21 | `task_21_json_models.dart` | Парсинг JSON в модели (enum, вложенные объекты) | Mid |
 | 22 | `task_22_lru_cache.dart` | LRU Cache (LinkedHashMap, O(1)) | Mid/Senior |
+| 27 | `task_27_debounce.dart` | Debounce и Throttle (Timer) | Mid |
+| 29 | `task_29_value_equality.dart` | ==, hashCode, copyWith | Mid |
 
 ---
 
@@ -40,6 +45,9 @@
 | 13 | `task_13_custom_painter.dart` | CustomPainter, Canvas, анимация | Mid |
 | 14 | `task_14_animations.dart` | AnimationController, Hero, Implicit animations | Mid |
 | 15 | `task_15_navigation.dart` | Навигация, именованные маршруты, аргументы | Mid |
+| 30 | `task_30_future_builder.dart` | FutureBuilder: loading / data / error | Junior/Mid |
+| 31 | `task_31_form_validation.dart` | Form, validator, GlobalKey<FormState> | Junior/Mid |
+| 32 | `task_32_change_notifier.dart` | ChangeNotifier и ListenableBuilder | Junior/Mid |
 
 ---
 
@@ -54,6 +62,8 @@
 | 20 | `task_20_platform_channels.dart` | Platform Channels, MethodChannel, EventChannel | Senior |
 | 23 | `task_23_slivers.dart` | Slivers: CustomScrollView, SliverAppBar, SliverList | Mid/Senior |
 | 24 | `task_24_state_restoration.dart` | State Restoration: RestorationMixin, Restorable* | Senior |
+| 33 | `task_33_widget_keys.dart` | ValueKey и сохранение State при перестановке | Mid |
+| 34 | `task_34_mounted_async.dart` | mounted после await | Mid |
 
 ---
 
@@ -136,6 +146,14 @@ Stream<int> oddsThenEvens(int n) async* {
   - Ответ: граница для перерисовки: изолирует поддерево в отдельный слой, чтобы при изменениях рядом не перерисовывать всё. Применять при дорогом `paint`/анимациях/скролле, когда часть UI часто меняется, а соседняя — нет (не ставить везде без измерений).
 - Implicit vs Explicit анимации — в чём разница?
   - Ответ: implicit (`AnimatedContainer`, `AnimatedOpacity`…) — проще, анимируют переходы свойств автоматически. explicit (`AnimationController`, `Tween`, `AnimatedBuilder`) — полный контроль над таймингом, кривыми, несколькими анимациями и сложными сценариями.
+- Debounce vs throttle?
+  - Ответ: debounce ждёт паузу и вызывает **последнее** действие (поиск по вводу). Throttle вызывает **сразу** и затем игнорирует события, пока не пройдёт интервал (скролл, повторные нажатия).
+- Зачем переопределять `==` и `hashCode` вместе?
+  - Ответ: равные объекты обязаны иметь одинаковый `hashCode`. Иначе `Set` и `Map` будут считать их разными. Для иммутабельных моделей удобен `copyWith`: новое значение без мутации исходного.
+- Зачем `Key` при перестановке списка?
+  - Ответ: без ключа Flutter сопоставляет элементы по позиции, и `State` (текст в поле, скролл, анимация) остаётся на старом месте. `ValueKey` привязывает состояние к идентификатору элемента.
+- Почему после `await` проверяют `mounted`?
+  - Ответ: за время ожидания виджет могли убрать из дерева. `setState` после `dispose` бросает ошибку. `if (!mounted) return;` отсекает этот случай.
 
 ---
 

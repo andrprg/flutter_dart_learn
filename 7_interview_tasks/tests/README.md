@@ -28,6 +28,16 @@
 | `test_20_platform_channels_test.dart` | Platform Channels | `flutter test` | `flutter test sobes_tasks/tests/test_20_platform_channels_test.dart` |
 | `test_21_json_models_test.dart` | JSON models | `dart test` | `dart test sobes_tasks/tests/test_21_json_models_test.dart` |
 | `test_22_lru_cache_test.dart` | LRU Cache | `dart test` | `dart test sobes_tasks/tests/test_22_lru_cache_test.dart` |
+| `test_25_valid_parentheses_test.dart` | Скобки | `dart test` | `dart test 7_interview_tasks/tests/test_25_valid_parentheses_test.dart` |
+| `test_26_binary_search_test.dart` | Бинарный поиск | `dart test` | `dart test 7_interview_tasks/tests/test_26_binary_search_test.dart` |
+| `test_27_debounce_test.dart` | Debounce/Throttle | `dart test` | `dart test 7_interview_tasks/tests/test_27_debounce_test.dart` |
+| `test_28_merge_sorted_test.dart` | Слияние списков | `dart test` | `dart test 7_interview_tasks/tests/test_28_merge_sorted_test.dart` |
+| `test_29_value_equality_test.dart` | == / copyWith | `dart test` | `dart test 7_interview_tasks/tests/test_29_value_equality_test.dart` |
+| `test_30_future_builder_test.dart` | FutureBuilder | `flutter test` | `flutter test 7_interview_tasks/tests/test_30_future_builder_test.dart` |
+| `test_31_form_validation_test.dart` | Форма | `flutter test` | `flutter test 7_interview_tasks/tests/test_31_form_validation_test.dart` |
+| `test_32_change_notifier_test.dart` | ChangeNotifier | `flutter test` | `flutter test 7_interview_tasks/tests/test_32_change_notifier_test.dart` |
+| `test_33_widget_keys_test.dart` | ValueKey | `flutter test` | `flutter test 7_interview_tasks/tests/test_33_widget_keys_test.dart` |
+| `test_34_mounted_async_test.dart` | mounted | `flutter test` | `flutter test 7_interview_tasks/tests/test_34_mounted_async_test.dart` |
 
 ## Запуск всех тестов
 
@@ -77,4 +87,14 @@ flutter test sobes_tasks/tests/test_11_stateful_counter_test.dart
 | 20 Platform Channels | 14 |
 | 21 JSON models | 8 |
 | 22 LRU Cache | 5 |
-| **Итого** | **~288 тестов** |
+| 25 Скобки | 3 |
+| 26 Бинарный поиск | 3 |
+| 27 Debounce | 3 |
+| 28 Слияние | 3 |
+| 29 Value equality | 4 |
+| 30 FutureBuilder | 2 |
+| 31 Форма | 2 |
+| 32 ChangeNotifier | 2 |
+| 33 ValueKey | 1 |
+| 34 mounted | 2 |
+| **Итого** | **~313 тестов** |

@@ -2,29 +2,45 @@
 
 Этот маршрут помогает проходить проект последовательно: сначала язык и базовые структуры данных, затем асинхронность, Flutter UI, state management, функциональный стиль и мини-приложения.
 
+В каждом модуле также есть:
+- `interview_questions.md` — типичные вопросы с собеседований по теме;
+- `interview_answers.md` — ответы для самопроверки (сначала ответь сам).
+
 ## 1. Dart Core
 
 Цель: уверенно писать чистую логику без Flutter.
 
-1. `1_dart_core/List/list_task.dart`
-2. `1_dart_core/map_set/map_set_task.dart`
-3. `1_dart_core/strings/string_task.dart`
-4. `1_dart_core/dart3_patterns/theory.md` + `patterns_task.dart`
-5. `1_dart_core/eventloop/eventloop_task.dart`
+1. `1_dart_core/null_safety/null_safety_task.dart`
+2. `1_dart_core/oop/oop_task.dart`
+3. `1_dart_core/generics/generics_task.dart`
+4. `1_dart_core/List/list_task.dart`
+5. `1_dart_core/map_set/map_set_task.dart`
+6. `1_dart_core/strings/string_task.dart`
+7. `1_dart_core/json/json_task.dart`
+8. `1_dart_core/dart3_patterns/theory.md` + `patterns_task.dart`
+9. `1_dart_core/eventloop/eventloop_task.dart`
 
 Что освоить:
+- null safety: `?`, `??`, `??=`, promotion;
+- OOP: классы, factory, abstract, implements, mixin, equality;
+- generics и extensions;
 - `List`, `Map`, `Set`;
 - частоты, группировка, индексы;
 - обработка строк и `RegExp`;
+- JSON: `dart:convert`, fromJson/toJson;
 - records, patterns, `if-case`, switch-выражения, object patterns, `when`, sealed classes (по [Codelab](https://codelabs.developers.google.com/codelabs/dart-patterns-records));
 - event loop: синхронный код, microtask queue и event queue.
 
 Проверка:
 
 ```bash
+flutter test 1_dart_core/null_safety/null_safety_task_test.dart
+flutter test 1_dart_core/oop/oop_task_test.dart
+flutter test 1_dart_core/generics/generics_task_test.dart
 flutter test 1_dart_core/List/list_task_test.dart
 flutter test 1_dart_core/map_set/map_set_task_test.dart
 flutter test 1_dart_core/strings/string_task_test.dart
+flutter test 1_dart_core/json/json_task_test.dart
 flutter test 1_dart_core/dart3_patterns/patterns_task_test.dart
 flutter test 1_dart_core/eventloop/eventloop_task_test.dart
 ```
@@ -35,18 +51,21 @@ flutter test 1_dart_core/eventloop/eventloop_task_test.dart
 
 1. `2_dart_async/future/future_task.dart`
 2. `2_dart_async/streams/stream_task.dart`
+3. `2_dart_async/isolates/isolates_task.dart`
 
 Что освоить:
 - `Future`, `async` / `await` (после event loop из раздела 1);
 - обработка ошибок;
 - `Stream`, `StreamController`, broadcast;
-- debounce, merge, concat, recover.
+- debounce, merge, concat, recover;
+- isolates: `Isolate.run`, сообщения, что можно/нельзя передавать.
 
 Проверка:
 
 ```bash
 flutter test 2_dart_async/future/future_task_test.dart
 flutter test 2_dart_async/streams/stream_task_test.dart
+flutter test 2_dart_async/isolates/isolates_task_test.dart
 ```
 
 ## 3. Functional Dart With fpdart
@@ -56,43 +75,65 @@ flutter test 2_dart_async/streams/stream_task_test.dart
 1. `3_functional_dart_with_fpdart/fpdart/fpdart_task.dart`
 2. `3_functional_dart_with_fpdart/fpdart/fpdart_validation_task.dart`
 3. `3_functional_dart_with_fpdart/fpdart/fpdart_repository_task.dart`
+4. `3_functional_dart_with_fpdart/fpdart/fpdart_composition_task.dart`
 
 Что освоить:
 - `Option`;
 - `Either`;
 - `Task` и `TaskEither`;
+- `IO`, `Reader`, `State`, do-нотация;
 - накопление ошибок формы;
-- repository layer без исключений в UI.
+- repository layer без исключений в UI;
+- композиция: sealed errors, traverse/sequence, parallel, recover.
 
 Проверка:
 
 ```bash
 flutter test 3_functional_dart_with_fpdart/fpdart/fpdart_task_test.dart
 flutter test 3_functional_dart_with_fpdart/fpdart/fpdart_validation_task_test.dart
+flutter test 3_functional_dart_with_fpdart/fpdart/fpdart_composition_task_test.dart
 ```
 
 ## 4. Flutter UI Basics
 
 Цель: научиться собирать интерфейсы из виджетов и понимать layout constraints.
 
-1. `4_flutter_ui_basics/layout/layout_task.dart`
-2. `4_flutter_ui_basics/flutter_widgets_task.dart`
-3. `4_flutter_ui_basics/forms/forms_task.dart`
-4. `4_flutter_ui_basics/theming/theming_task.dart`
+1. `4_flutter_ui_basics/constraints/constraints_task.dart`
+2. `4_flutter_ui_basics/layout/layout_task.dart`
+3. `4_flutter_ui_basics/flutter_widgets_task.dart`
+4. `4_flutter_ui_basics/scrolling/scrolling_task.dart`
+5. `4_flutter_ui_basics/images/images_task.dart`
+6. `4_flutter_ui_basics/forms/forms_task.dart`
+7. `4_flutter_ui_basics/overlays/overlays_task.dart`
+8. `4_flutter_ui_basics/theming/theming_task.dart`
+9. `4_flutter_ui_basics/widget_keys/widget_keys_task.dart`
+10. `4_flutter_ui_basics/animations/animations_task.dart`
 
 Что освоить:
-- `Row`, `Column`, `Stack`, `Expanded`, `Flexible`;
+- tight/loose/unbounded constraints, flex и overflow;
+- `Row`, `Column`, `Stack`, `Expanded`, `Flexible`, slivers;
 - `ListView`, `GridView`, `FutureBuilder`, `StreamBuilder`;
+- `ScrollController`, pull-to-refresh, PageView, load more;
+- `BoxFit`, AspectRatio, placeholder/error для картинок;
 - формы и валидаторы;
-- Material 3 themes и `ThemeExtension`.
+- SnackBar, Dialog, BottomSheet;
+- Material 3 themes и `ThemeExtension`;
+- `ValueKey` / `ObjectKey` / `UniqueKey` / `GlobalKey`;
+- implicit/explicit animations, `AnimationController`, Tween.
 
 Проверка:
 
 ```bash
+flutter test 4_flutter_ui_basics/constraints/constraints_task_test.dart
 flutter test 4_flutter_ui_basics/layout/layout_task_test.dart
 flutter test 4_flutter_ui_basics/flutter_widgets_task_test.dart
+flutter test 4_flutter_ui_basics/scrolling/scrolling_task_test.dart
+flutter test 4_flutter_ui_basics/images/images_task_test.dart
 flutter test 4_flutter_ui_basics/forms/forms_task_test.dart
+flutter test 4_flutter_ui_basics/overlays/overlays_task_test.dart
 flutter test 4_flutter_ui_basics/theming/theming_task_test.dart
+flutter test 4_flutter_ui_basics/widget_keys/widget_keys_task_test.dart
+flutter test 4_flutter_ui_basics/animations/animations_task_test.dart
 ```
 
 ## 5. Flutter App Skills
@@ -102,13 +143,31 @@ flutter test 4_flutter_ui_basics/theming/theming_task_test.dart
 1. `5_flutter_app_skills/navigation/go_router_task.dart`
 2. `5_flutter_app_skills/responsive/responsive_task.dart`
 3. `5_flutter_app_skills/accessibility/a11y_task.dart`
-4. `5_flutter_app_skills/errors_juniors/flutter_erros.dart`
+4. `5_flutter_app_skills/focus/focus_node_task.dart`
+5. `5_flutter_app_skills/networking/networking_task.dart`
+6. `5_flutter_app_skills/local_storage/storage_task.dart`
+7. `5_flutter_app_skills/local_notifications/notifications_task.dart`
+8. `5_flutter_app_skills/permissions/permissions_task.dart`
+9. `5_flutter_app_skills/app_lifecycle/lifecycle_task.dart`
+10. `5_flutter_app_skills/deep_links/deep_links_task.dart`
+11. `5_flutter_app_skills/localization/localization_task.dart`
+12. `5_flutter_app_skills/errors_juniors/flutter_erros.dart`
 
 Что освоить:
 - `go_router`, redirect, query/path params;
 - responsive breakpoints;
 - accessibility и `Semantics`;
+- `FocusNode`, `requestFocus` / `unfocus`, dispose и traversal;
+- HTTP-клиент, статусы, JSON, retry;
+- key-value storage, токен, настройки, миграция ключей;
+- локальные уведомления: каналы, payload, actions;
+- permissions: статусы, request, settings, rationale;
+- app lifecycle: resume/pause, черновик, sync;
+- deep/universal links: parse, match routes, auth redirect;
+- i18n: locale resolution, plural, interpolate;
 - типичные Flutter-ошибки junior-разработчиков.
+
+Практика по уведомлениям: после задач посмотри эталонный сервис `LOCAL_NOTIFICATIONS.dart` в корне репозитория.
 
 Проверка:
 
@@ -116,6 +175,14 @@ flutter test 4_flutter_ui_basics/theming/theming_task_test.dart
 flutter test 5_flutter_app_skills/navigation/go_router_task_test.dart
 flutter test 5_flutter_app_skills/responsive/responsive_task_test.dart
 flutter test 5_flutter_app_skills/accessibility/a11y_task_test.dart
+flutter test 5_flutter_app_skills/focus/focus_node_task_test.dart
+flutter test 5_flutter_app_skills/networking/networking_task_test.dart
+flutter test 5_flutter_app_skills/local_storage/storage_task_test.dart
+flutter test 5_flutter_app_skills/local_notifications/notifications_task_test.dart
+flutter test 5_flutter_app_skills/permissions/permissions_task_test.dart
+flutter test 5_flutter_app_skills/app_lifecycle/lifecycle_task_test.dart
+flutter test 5_flutter_app_skills/deep_links/deep_links_task_test.dart
+flutter test 5_flutter_app_skills/localization/localization_task_test.dart
 flutter test 5_flutter_app_skills/errors_juniors/errors_juniors_test.dart
 ```
 
@@ -123,10 +190,14 @@ flutter test 5_flutter_app_skills/errors_juniors/errors_juniors_test.dart
 
 Цель: научиться хранить состояние, отделять UI от бизнес-логики и работать с async state.
 
-1. `6_state_management/riverpod/riverpod_task.dart`
-2. `6_state_management/fpdart_riverpod/fpdart_riverpod_task.dart`
+1. `6_state_management/change_notifier/change_notifier_task.dart`
+2. `6_state_management/architecture/architecture_task.dart`
+3. `6_state_management/riverpod/riverpod_task.dart`
+4. `6_state_management/fpdart_riverpod/fpdart_riverpod_task.dart`
 
 Что освоить:
+- `ChangeNotifier` / `ValueNotifier` / `Listenable`;
+- слои domain / data / presentation на `TaskEither`;
 - providers;
 - generated Riverpod;
 - `AsyncValue`;
@@ -136,6 +207,8 @@ flutter test 5_flutter_app_skills/errors_juniors/errors_juniors_test.dart
 Проверка:
 
 ```bash
+flutter test 6_state_management/change_notifier/change_notifier_task_test.dart
+flutter test 6_state_management/architecture/architecture_task_test.dart
 flutter test 6_state_management/riverpod/riverpod_task_test.dart
 flutter test 6_state_management/fpdart_riverpod/fpdart_riverpod_task_test.dart
 ```
@@ -144,7 +217,7 @@ flutter test 6_state_management/fpdart_riverpod/fpdart_riverpod_task_test.dart
 
 Цель: закрепить алгоритмы, Dart и Flutter-вопросы для собеседований.
 
-1. `7_interview_tasks/task_01_palindrome.dart` ... `task_24_state_restoration.dart`
+1. `7_interview_tasks/task_01_palindrome.dart` ... `task_34_mounted_async.dart`
 2. `7_interview_tasks/README.md`
 3. `7_interview_tasks/tests/`
 

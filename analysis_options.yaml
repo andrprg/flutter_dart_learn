@@ -34,3 +34,6 @@ analyzer:
     always_declare_return_types: error
     # Делаем предупреждения о неиспользовании const ошибками (строгий режим для обучения)
     prefer_const_constructors: warning
+  exclude:
+    - build/**
+    - windows/**
