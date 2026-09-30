@@ -42,6 +42,7 @@
 - **`networking/`**: HTTP-клиент, статусы, URI, JSON, `ApiClient`, retry.
 - **`local_storage/`**: key-value storage, токен, `UserSettings`, onboarding, миграция ключей.
 - **`local_notifications/`**: каналы Android, actions, payload, permissions (логика без плагина).
+- **`push_notifications/`**: FCM-токен, notification/data, foreground/background/terminated, collapse (логика без плагина).
 - **`permissions/`**: статусы, request, rationale, settings, feature → permission.
 - **`app_lifecycle/`**: resume/pause/hidden, сохранение черновика, sync pause/resume.
 - **`deep_links/`**: custom scheme / universal links, route match, auth redirect.

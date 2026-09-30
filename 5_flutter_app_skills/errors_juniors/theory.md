@@ -99,7 +99,59 @@ ListView.builder(itemCount: items.length, itemBuilder: ...)
 - Поля `StatelessWidget` — `final`.
 - Не мутируй props; не pantуй гигантский `build` — дроби виджеты.
 
-## 9. Зачем это знать
+## 9. Контекст, навигация и оверлеи
+
+`BuildContext` — ссылка на Element. После `await` Element мог размонтироваться. `mounted` у `State` и `context.mounted` отвечают на один вопрос с разных сторон. Проверка нужна **после** каждого `await`, перед `setState`, `Navigator`, `ScaffoldMessenger`, `Theme.of`.
+
+```dart
+final messenger = ScaffoldMessenger.of(context);
+await save();
+messenger.showSnackBar(...); // messenger взяли до await
+```
+
+Так можно не держать `context`, если объект уже найден. Нельзя заранее взять `Navigator` и думать, что route жив, если тебе нужен именно этот State.
+
+Навигация и `showDialog` во время `build` запрещены: дерево ещё собирается, overlay не готов. Отложенный кадр:
+
+```dart
+WidgetsBinding.instance.addPostFrameCallback((_) {
+  if (!mounted) return;
+  showDialog<void>(context: context, builder: ...);
+});
+```
+
+`InheritedWidget` (`Theme`, `MediaQuery`, `Provider`) в `initState` не подписывает Element. Чтение может сработать случайно и не обновиться, либо бросить. Место — `didChangeDependencies` или `build`.
+
+Два `Scaffold` вложенно: `Scaffold.of` находит ближайший. SnackBar и `BottomSheet` привяжутся к внутреннему и обрежутся. Один scaffold на экран, мессенджер — `ScaffoldMessenger` у `MaterialApp`.
+
+## 10. Жесты, краска и списки
+
+`InkWell` рисует сплэш на `Material` под собой. Если между ними непрозрачный `Container` с цветом, сплэш есть, но его не видно. Цвет кладут на `Material(color:)` или `Ink`.
+
+`Color(0xFFFFFF)` — альфа в старшем байте равна 0, цвет полностью прозрачный. Непрозрачный белый — `Color(0xFFFFFFFF)` или `Colors.white`.
+
+`ListView(children:)` строит всех детей сразу. Длинная лента — `builder` и стабильный `Key`. `shrinkWrap: true` у длинного списка внутри `Column` измеряет всех и снова дорогой.
+
+`const` конструктор виджета с не-const полем не соберётся. Поля `StatelessWidget` — `final`, иначе виджет врёт, что он immutable, и `const` невозможен.
+
+Тяжёлый синхронный цикл в `build` блокирует кадр так же, как в event loop. Вынос в `compute` / `Isolate.run` — если работа реально длиннее пары миллисекунд и это не «десять строк JSON».
+
+## 11. Как читать симптом
+
+| Симптом | Куда смотреть |
+|---|---|
+| `setState() called after dispose()` | `await` без `mounted`, слушатель без `dispose` |
+| `setState() or markNeedsBuild() called during build` | эффект внутри `build` |
+| `Vertical viewport was given unbounded height` | список в `Column` без `Expanded` |
+| `RenderFlex overflowed` | нет flex / нет переноса текста |
+| `Looking up a deactivated widget's ancestor` | `context` после ухода route |
+| `Duplicate GlobalKey` | один ключ на два виджета |
+| жёлто-чёрных полос нет, тап «не жмётся» | нет hit-test (`color` / `behavior`) |
+| сплэш не виден | цвет не на `Material` |
+
+Сообщение Flutter почти всегда называет виджет и предлагает направление фикса. Сначала прочитай его целиком, потом код.
+
+## 12. Зачем это знать
 
 - Эти 10 паттернов закрывают половину junior-багрепортов.
 - Симптом («overflow», «setState after dispose») → одна из строк выше.

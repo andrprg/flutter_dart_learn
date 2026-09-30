@@ -118,7 +118,60 @@ double totalArea(List<Shape> shapes) =>
 
 Список `Shape` — вызывается `area` у `Rectangle` / `Circle` без знания конкретного типа.
 
-## 8. Зачем это знать
+## 8. Class modifiers: что можно расширять
+
+| Модификатор | Смысл |
+|---|---|
+| `abstract` | Нельзя `new`; можно `extends` и `implements` |
+| `interface` | Снаружи библиотеки только `implements`, реализацию не наследуют |
+| `base` | Снаружи только `extends`, не `implements` (сохраняется инвариант суперкласса) |
+| `final` | Снаружи нельзя ни `extends`, ни `implements` |
+| `sealed` | Подтипы только в этой библиотеке; `switch` исчерпывающий |
+| `mixin class` | И класс, и mixin |
+
+`abstract interface class` — контракт без наследования реализации. Так помечают порты репозитория: снаружи нельзя случайно `extends` и сломать инварианты, можно только `implements`.
+
+## 9. `super`, инициализация, `noSuchMethod`
+
+Порядок создания: инициализаторы полей → `super` → тело конструктора. В списке инициализации `this` ещё не готов для методов, которые читают поля.
+
+```dart
+class Rectangle extends Shape {
+  Rectangle(this.width, this.height);
+  final double width;
+  final double height;
+  @override
+  double get area => width * height;
+}
+```
+
+Именованные конструкторы не наследуются. `super.named(...)` вызывают явно.
+
+`==` переопределяют вместе с `hashCode`. Для моделей с кучей полей удобен пакет `equatable` или Dart 3 records как ключ, но контракт тот же: равные объекты → равные хеши, хеш стабилен, пока объект в `Map`/`Set`.
+
+## 10. Mixin: линейный порядок и ограничения
+
+`class C extends A with M1, M2` — цепочка `A → M1 → M2 → C`. Метод `M2` перекрывает `M1`. `super` в mixin идёт к предыдущему в цепочке, не «к классу вообще».
+
+`on` ограничивает, куда mixin можно навесить:
+
+```dart
+mixin NameLabel on User {
+  String get label => name.toUpperCase();
+}
+```
+
+Без `on` mixin не видит поля `User`. С `on` — только классы, которые уже `extends`/`implements` `User`.
+
+## 11. Типичные ошибки
+
+- `factory` назвали обычным конструктором и ждут `this` в теле — у factory нет `this`, пока не вызван generative.
+- Переопределили `==` без `hashCode` — объект «пропадает» из `Set`.
+- Мутируемое поле участвует в `==` — после изменения ключ Map не находится.
+- `implements` вместо `extends`, когда нужна реализация `area` по умолчанию: implements обязывает написать всё заново.
+- Два mixin с одним методом — побеждает последний в `with`; это не ошибка компилятора, это порядок.
+
+## 12. Зачем это знать
 
 - Модели (`User`, `Money`) с `fromJson` / `toJson` и value equality.
 - Разделять контракт (`implements`) и переиспользование кода (`mixin` / `extends`).

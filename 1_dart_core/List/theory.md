@@ -99,7 +99,49 @@ final items = [
 - Для частых проверок «есть ли элемент» лучше `Set`.
 - Удаление по условию: собрать новый список через `where`, или `removeWhere` на growable (мутация).
 
-## 8. Зачем это знать
+## 8. Сортировка и компараторы
+
+```dart
+final copy = [...list]..sort(); // мутирует copy, не исходный const/unmodifiable
+
+list.sort((a, b) => a.price.compareTo(b.price));
+
+// несколько ключей: цена, потом имя
+int byPriceThenName(Item a, Item b) {
+  final byPrice = a.price.compareTo(b.price);
+  if (byPrice != 0) return byPrice;
+  return a.name.compareTo(b.name);
+}
+```
+
+`sort` сортирует **на месте** и возвращает `void`. Для чистой функции копируй список. `sorted` из `package:collection` возвращает новый список — в задачах модуля достаточно `[...list]..sort()`.
+
+Компаратор обязан быть строгим порядком: `compare(a, b)` и `compare(b, a)` разных знаков, ноль только у «равных». Иначе порядок нестабилен на глаз, хотя Dart sort устойчивый для равных элементов.
+
+## 9. Ленивость `map` / `where`
+
+```dart
+final doubled = list.map((e) {
+  print(e); // не печатает, пока никто не итерирует
+  return e * 2;
+});
+doubled.toList(); // один проход
+doubled.toList(); // второй проход — колбэк снова
+```
+
+Цепочка `where` → `map` → `where` — один проход на `.toList()`, не три промежуточных списка. Пока не материализовал, исходная мутация списка видна итератору. Для снимка данных сначала `.toList()`.
+
+`for`-цикл по списку и `forEach` не ленивые. `forEach` нельзя прервать `break` и нельзя `await` внутри обычного `forEach` (колбэк не `async` в смысле ожидания). Для async по элементам — `for` + `await` или отдельный хелпер.
+
+## 10. Пустой список, диапазоны, мутация во время обхода
+
+- `sublist` при `end < start` или индекс вне `0...length` — `RangeError`. Границы проверяй до вызова.
+- `removeAt` / `insert` в середине сдвигают хвост — O(n). В горячем цикле собирай новый список.
+- Не `remove` элемент внутри `for (final x in list)` — concurrent modification. Фильтр через `where` или иди с конца.
+- `first` / `last` / `single` на пустом — `StateError`. Для «может не быть» — `firstOrNull` из `package:collection` или проверка `isEmpty`.
+- `==` у `List` — **по идентичности**, не по элементам. Сравнение содержимого: `listEquals` из `flutter/foundation` или поэлементно. В `Set<List<int>>` два одинаковых по составу списка — разные ключи.
+
+## 11. Зачем это знать
 
 - Почти любой экран Flutter — списки данных и `ListView`.
 - Отличать ленивый `Iterable` от материализованного `List`.

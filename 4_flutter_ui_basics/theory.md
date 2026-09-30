@@ -125,7 +125,47 @@ FutureBuilder<Map<String, String>>(
 
 `const` виджеты — меньше аллокаций и проще сверка Element tree (canonical instances).
 
-## 9. InheritedWidget (кратко)
+## 9. Element, RenderObject и зачем это на собесе
+
+Виджет — описание. Flutter сравнивает новое дерево со старым и обновляет **Element**.
+
+| Объект | Живёт | Роль |
+|---|---|---|
+| Widget | один кадр описания | immutable конфиг |
+| Element | пока виджет того же типа и key на этом месте | состояние, ссылка на widget |
+| RenderObject | у RenderObjectWidget | размер, позиция, paint, hit test |
+
+`StatelessWidget` и `StatefulWidget` оба порождают Element. Разница: у stateful Element держит `State`, и `State` переживает rebuild, пока Element тот же. `setState` не «рисует сразу» — помечает Element dirty. `build` вызовется в фазе build кадра.
+
+`const` виджет с теми же аргументами — один экземпляр. Сверка видит «тот же объект» и может не спускаться в детей. Поэтому `const` на кусках, которые не зависят от `setState`, дешевле.
+
+InheritedWidget: `dependOnInheritedWidgetOfExactType` записывает Element в список подписчиков. `notifyClients` перестраивает только их, не всё приложение. `Theme.of` / `MediaQuery.of` — это подписка. Читать их в `initState` рано: зависимости Element регистрируются, когда идёт build. Для «один раз при старте» — `didChangeDependencies`.
+
+## 10. Жизненный цикл State
+
+| Метод | Когда |
+|---|---|
+| `initState` | один раз, до первого `build`; подписки, контроллеры |
+| `didChangeDependencies` | сразу после `initState` и когда Inherited над нами изменился |
+| `build` | каждый dirty кадр |
+| `didUpdateWidget` | родитель передал новый widget того же runtimeType |
+| `deactivate` | Element снят, но может переехать (GlobalKey) |
+| `dispose` | Element больше не вернётся; контроллеры, подписки |
+
+В `didUpdateWidget` сравнивают `widget.field` и `oldWidget.field`. Если id сущности сменился, а State остался (нет Key) — сбрось локальные поля, иначе форма показывает чужие данные.
+
+`setState` после `dispose` — ошибка. После `await` проверяй `mounted`. `setState` в `build` — «setState during build»: эффект должен уйти в колбэк, `initState` или post-frame.
+
+## 11. Типичные ошибки
+
+- `FutureBuilder(future: load())` внутри `build`.
+- Контроллер, созданный в `build`, а не в `State`.
+- `Column` из тысяч детей вместо `ListView.builder`.
+- `Navigator.push` во время `build` (получил аргумент и сразу ушёл на другой экран).
+- Забыть `super.initState()` / `super.dispose()`.
+- Считать `StatelessWidget` «без перерисовки». Он перерисовывается, когда родитель передал новые поля или Inherited изменился. У него нет своего `setState`.
+
+## 12. InheritedWidget (кратко)
 
 Данные вниз по дереву без передачи через каждый конструктор. `Theme.of(context)`, `MediaQuery.of` — подписка через `dependOnInheritedWidgetOfExactType`: при изменении Inherited — rebuild подписчиков.
 

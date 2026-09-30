@@ -107,7 +107,48 @@ await Future<void>.delayed(Duration.zero); // здесь будет только
 await Future<void>.delayed(Duration.zero); // теперь e2
 ```
 
-## 6. Зачем это знать
+## 6. `Future.sync`, ошибки и «кто первый»
+
+`Future.sync` выполняет тело **сразу**. Если тело вернуло значение — Future уже завершён, `.then` всё равно уйдёт в microtask. Если тело бросило — Future завершён с ошибкой, тоже без синхронного вызова слушателей.
+
+```dart
+Future<int> boom() => Future.sync(() => throw StateError('x'));
+// до .then / await исключение ещё не всплыло как unhandled
+```
+
+Необработанная ошибка Future репортится, когда Future завершился и на нём нет обработчика к концу текущего microtask-хвоста. `await` и `.catchError` обработчик ставят. «Потерянный» `future()` без `await` в `main` — классика «uncaught async error» уже после `sync` логов.
+
+`Timer.run` и `Future(() {})` оба кладут задачу в event queue. `Duration.zero` не значит «прямо сейчас»: это событие, и оно ждёт, пока очередь microtask опустеет.
+
+## 7. Голодание event loop
+
+```dart
+void starve() {
+  scheduleMicrotask(starve); // каждый microtask ставит следующий
+}
+```
+
+Пока цепочка microtask не кончится, кадр Flutter, таймер и сокет не получат ход. То же с синхронным `while (true)` или парсингом огромного JSON на main isolate: очередь не крутится, UI замирает. Лечение — разбить работу (`Future(() {})` между кусками) или унести в isolate. `await Future.delayed(Duration.zero)` в длинном цикле отдаёт ход event queue, но это костыль, не параллелизм.
+
+Flutter scheduler сам ставит кадр как событие. `setState` только помечает элемент dirty; `build` случится, когда event loop дойдёт до кадра и нет бесконечных microtask.
+
+## 8. Как читать чужой порядок `print`
+
+1. Выпиши всё, что происходит до первого `await` / конца синхронной функции — сверху вниз.
+2. Выпиши microtask в порядке постановки. Если microtask ставит ещё microtask — он встаёт в хвост и выполнится до любого event.
+3. Выпиши event queue. Один «тик» — одно событие, затем снова все накопившиеся microtask.
+4. `await` на уже готовом Future — это microtask, не event. `await Future.delayed` и `await Future(() {})` — event.
+
+На собеседовании не угадывай порядок «на глаз». Разложи по этим четырём шагам и только потом назови печать.
+
+## 9. Типичные ошибки
+
+- Считать `async` функцией, которая сразу уходит в фон. До первого `await` она синхронная.
+- Ждать, что `Future.delayed(Duration.zero)` обойдёт microtask. Не обойдёт.
+- Ставить тяжёлый разбор в `scheduleMicrotask` «чтобы не блокировать». Microtask как раз блокирует события сильнее, чем один event.
+- Путать очередь isolate с потоками ОС. Второй isolate — второй event loop и другая память.
+
+## 10. Зачем это знать
 
 - Понять, почему `print` вокруг `Future` идут «не по порядку».
 - Не блокировать isolate тяжёлым синхронным циклом — замирают и UI, и таймеры, и microtask.

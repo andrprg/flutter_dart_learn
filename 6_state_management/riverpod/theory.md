@@ -136,7 +136,40 @@ int timer(Ref ref) {
 - `ConsumerWidget` / `ConsumerStatefulWidget` — доступ к `WidgetRef`.
 - `AuthGate` по `AuthState`, тема через `ThemeMode` notifier, пагинация — `state.copyWith`.
 
-## 8. Вопросы с собеса (кратко)
+## 8. Жизнь провайдера и `autoDispose`
+
+Провайдер создаётся при первом `watch` / `read` и живёт в `ProviderScope`. `autoDispose` уничтожает состояние, когда не осталось слушателей: ушли с экрана — кэш ленты сбросился, следующий заход снова покажет loading. Это правильно для экрана поиска и плохо для сессии. Сессию и тему помечают `keepAlive: true`.
+
+`ref.onDispose` в `build` закрывает `StreamController`, таймер, подписку. Он вызовется при уничтожении провайдера и перед повторным `build`, если зависимости `watch` изменились. Забыть закрыть поток здесь — та же утечка, что `dispose` в `State`.
+
+`ref.watch` в `build` провайдера — зависимость. Сменился город — `weather` пересоздаётся и снова грузит. `ref.read` в `build` провайдера зависимости не создаёт: город изменится, погода останется старой. В методе кнопки как раз `read`: не надо пересоздавать контроллер, надо разово взять репозиторий.
+
+`invalidate` помечает провайдер грязным. Следующее чтение заново вызовет `build`. `invalidateSelf` из notifier — «перезагрузи меня». `await future` после этого дождётся нового `Future`, не старого.
+
+Family `userProvider(id)` — отдельное состояние на каждый id. `autoDispose` у family освобождает id, которые больше никто не смотрит, иначе кэш пользователей растёт без предела.
+
+## 9. AsyncValue
+
+`AsyncValue` — `loading` / `data` / `error`. У `AsyncNotifier` первое `build` даёт loading, пока Future не завершился. `state = AsyncData(items)` кладёт данные. `state = AsyncError(e, st)` — ошибку.
+
+`when` обязателен к трём веткам: забытая ошибка превращается в вечный спиннер, если оставить только `if (snapshot.hasData)` по привычке из `FutureBuilder`.
+
+`AsyncValue.guard(() async { ... })` сам раскладывает успех и исключение. С `TaskEither` чаще явный `fold`, чтобы в ошибке был `Failure`, а не произвольный `Object`.
+
+Обновление списка без мигания на loading: `ref.invalidate` заново проходит через loading. Если нужно оставить старые данные на экране, пока идёт повтор, есть `previous` у `when` / `AsyncValue` (`isRefreshing`, `valueOrNull`). Для курса достаточно знать, что «invalidate всегда мигает», и не удивляться.
+
+Side effect (SnackBar, навигация) в `build` виджета выполнится на каждый rebuild. `ref.listen` срабатывает на переход значения. Сравнение `prev` и `next` отсекает повтор.
+
+## 10. Типичные ошибки
+
+- `watch` в `onPressed` нельзя: `watch` разрешён в `build`, в колбэке берут `read`.
+- `read` в `build` для данных, которые должны обновлять экран.
+- Забыть `ProviderScope` в тесте и в `main`.
+- Править сгенерированный `.g.dart` руками. Меняют аннотацию и перезапускают `build_runner`.
+- Сеть в синхронном `build` notifier «чтобы сразу». `build` может вызваться повторно. Загрузка — `Future`/`AsyncNotifier`.
+- Глобальный `ProviderContainer` плюс второй `ProviderScope` без `parent` — два разных мира состояний.
+
+## 11. Вопросы с собеса (кратко)
 
 1. Provider vs Riverpod? — compile-safe, без context для read, codegen/тесты.
 2. watch/read/listen? — подписка / разово / эффекты.

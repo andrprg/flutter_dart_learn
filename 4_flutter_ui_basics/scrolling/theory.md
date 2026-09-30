@@ -107,7 +107,35 @@ int pageIndexForOffset(double offset, double viewportWidth) {
 
 Когда нужен **общий** header (SliverAppBar) + внутренний скролл вкладок — `NestedScrollView`. Иначе два независимых скролла «ломают» ощущение одного экрана.
 
-## 8. Практика модуля
+## 8. Физика, клавиатура и вложенные жесты
+
+`ScrollPhysics` решает, как ведёт себя хвост жеста: iOS-bounce (`BouncingScrollPhysics`), Android-clamp (`ClampingScrollPhysics`), запрет скролла (`NeverScrollableScrollPhysics`). `AlwaysScrollableScrollPhysics` разрешает жест, даже если контент короче viewport — иначе `RefreshIndicator` не за что потянуть.
+
+`primary: true` (по умолчанию у вертикального списка, если `controller` не передан) берёт `PrimaryScrollController` из `Scaffold`. Два таких списка на экране — конфликт «кто главный». Второму передай свой `ScrollController` или `primary: false`.
+
+Клавиатура уменьшает `viewInsets`. `Scaffold` с `resizeToAvoidBottomInset: true` сужает body. Список тогда короче, а не спрятан под клавиатурой. Отдельный случай — поле внизу формы: `Scrollable.ensureVisible` в `onTap` поля докручивает его над клавиатурой.
+
+Вложенный вертикальный список в вертикальном скролле без shrinkWrap — ошибка constraints. Горизонтальный `ListView` внутри вертикального — нормально: оси разные, жест по направлению отдаётся тому, кто его заявил.
+
+## 9. `itemExtent`, ключи и сохранение позиции
+
+`itemExtent` фиксирует высоту item. Список не меряет каждого ребёнка и быстрее прыгает на index: `scrollTo` считается как `index * extent`. Если высота разная, `itemExtent` обрежет или растянет.
+
+Без стабильного `Key` состояние item (чекбокс, контроллер) приезжает к другому индексу после вставки в начало. Скролл при этом может остаться на том же offset в пикселях — и пользователь «видит другую строку». Key и offset решают разные задачи.
+
+`ScrollController.position` доступен после того, как список прикреплён. Читать `controller.offset` в `initState` рано: будет assert, что нет ни одного `ScrollPosition`. Подписывайся в `initState`, но читай метрики из listener или после кадра.
+
+`animateTo` во время другого `animateTo` перебивает анимацию. Для «наверх по тапу на аппбар» достаточно одного вызова. `jumpTo` телепортирует без анимации и без overscroll.
+
+## 10. Типичные ошибки
+
+- Грузить следующую страницу на каждый `ScrollUpdate`, пока `isLoading` ещё false, и отправить пять запросов. Флаг выставляй **до** `await`.
+- `threshold: 0` и плавающая точка: `maxScrollExtent - pixels` редко ровно 0 на bounce. Небольшой порог надёжнее.
+- Забыть `dispose` у контроллера, который слушает `setState`.
+- `PageView` без `itemCount` и бесконечный жест, когда страниц конечное число.
+- Pull-to-refresh на списке внутри `NeverScrollableScrollPhysics` без внешнего скролла — жест мёртвый.
+
+## 11. Практика модуля
 
 - `ProgressHeader` — процент из metrics.
 - `LoadMoreListener` — NotificationListener + shouldLoadMore.

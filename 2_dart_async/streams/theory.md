@@ -124,7 +124,63 @@ sub.resume();
 - Собрать `await stream.toList()` и сравнить список.
 - Для времени (debounce) — фейковые async / явные `Duration`.
 
-## 8. Зачем это знать
+## 8. Подписка, pause и ошибки в `listen`
+
+```dart
+final sub = stream.listen(
+  (value) {},
+  onError: (Object e, StackTrace st) {},
+  onDone: () {},
+  cancelOnError: false,
+);
+```
+
+Без `onError` ошибка из single-subscription stream становится необработанной. `cancelOnError: true` закрывает подписку на первой ошибке.
+
+`await for` сам подписывается и отписывается. `break` / `return` из цикла отменяет подписку. Ошибка потока вылетает из `await for` как обычное исключение — её берёт `try/catch`.
+
+`pause` копит события у single-subscription (буфер). Долгая пауза на быстром источнике раздувает память. Broadcast при паузе одного слушателя остальным события не держит ради него: пауза локальна, пропущенное этот слушатель не догонит.
+
+`distinct()` без аргумента сравнивает соседние элементы через `==`. Несоседние дубликаты остаются. Для «уникальные за всё время» нужен свой `Set` в `transform` или `where`.
+
+## 9. Debounce своими руками
+
+Идея: на каждое событие перезапускать таймер; в поток наружу писать значение, только если таймер дожил до конца.
+
+```dart
+Stream<T> debounce<T>(Stream<T> source, Duration duration) async* {
+  T? pending;
+  var has = false;
+  await for (final value in source) {
+    pending = value;
+    has = true;
+    await Future<void>.delayed(duration);
+    // гонка: за duration источник мог прислать более новое
+  }
+}
+```
+
+Честный debounce не `await`-ит внутри `await for` без буфера: пока ты спишь, события копятся, а таймер должен сбрасываться. На практике хранят последнее значение и `Timer`: каждый `add` делает `timer.cancel()` + новый `Timer`, в колбэке — `sink.add(last)`. Именно это имеют в виду в задаче поиска. `Stream.periodic` + `where` debounce не заменяет.
+
+`asyncExpand` ждёт внутренний stream до конца, потом берёт следующий элемент. Это concat, не merge. Параллельный merge — `StreamGroup.merge` из `package:async` или свой контроллер с несколькими подписками.
+
+## 10. Закрытие и «уже слушают»
+
+`StreamController.add` после `close` — ошибка. `close` дописывает `done`. Повторный `listen` на single-subscription — `StateError`, даже если первый уже `cancel`: поток одноразовый.
+
+Broadcast создают сразу: `StreamController<int>.broadcast()`. Событие без слушателей у broadcast **пропадает**. Сначала `listen`, потом `add`, если событие нельзя потерять. У обычного контроллера событие без слушателя буферизуется до подписки.
+
+`sync: true` у контроллера вызывает слушателя прямо в `add`, реентрантно. По умолчанию `add` планирует доставку. В задачах модуля синхронный контроллер не нужен и легче ловит «add во время listen».
+
+## 11. Типичные ошибки
+
+- `asBroadcastStream()` на уже слушаемом single-subscription — поздновато, если первый `listen` уже прошёл.
+- Забыть `cancel` в `State.dispose` — колбэк зовёт `setState` после unmount.
+- Считать `toList()` пригодным для бесконечного `Stream.periodic`. Он завершится только на `done`.
+- Глотать ошибку в `listen` без `onError` и искать, почему UI пустой.
+- Дебаунсить через `await Future.delayed` внутри `await for` и удивляться, что таймер не сбрасывается.
+
+## 12. Зачем это знать
 
 - Выбрать single vs broadcast до проектирования API.
 - Всегда продумывать `cancel` / `close`.

@@ -136,7 +136,50 @@ Future<Option<T>> runTaskWithSnackBar<T>(
 
 Фейковый `TodoRepository` возвращает `Right` / `Left`. `ProviderContainer(overrides: [todoRepositoryProvider.overrideWithValue(fake)])` → `container.read(todosProvider.future)` / notifier.submit.
 
-## 8. Вопросы с собеса (кратко)
+## 8. Где проходит граница типов
+
+Внутри `createTodo` и `fetchTodos` наружу из репозитория торчит `TaskEither`. Виджет импортировать `fpdart` не обязан, если между ними notifier:
+
+- экран делает `ref.watch` и видит `AsyncValue<List<Todo>>` или `TodoFormState`;
+- `fold` / `getOrElse((l) => throw l)` спрятан в провайдере.
+
+`throw l` в async-провайдере — способ положить `Left` в `AsyncError`. Объект ошибки тогда `UiFailure`, не строка. В `when` проверяют `error is NetworkUiFailure`. Если бросить `Exception(message)`, тип пропадёт и придётся парсить текст.
+
+Форма — другой случай. Ошибка валидации не обязана становиться `AsyncError` всего экрана: поле остаётся на месте, текст ошибки лежит в `TodoFormState.error`. `AsyncValue` хорош для загрузки списка. Локальная отправка формы часто явное состояние `isSubmitting` + `Option`/`UiFailure?`, потому что loading формы и loading списка не должны затирать друг друга.
+
+`ref.invalidate(todosProvider)` после успешного `Right` обновляет список. Инвалидировать на `Left` не нужно: данные не изменились, будет лишний запрос и мигание.
+
+`runTaskWithSnackBar` удобен для команды без своего notifier («добавить в избранное»). Для формы с несколькими полями SnackBar на каждую клавишу — шум; ошибка рядом с полем. SnackBar — для результата, который не к чему приклеить, и для сетевого сбоя отправки.
+
+## 9. Тест без сети и без лишнего UI
+
+`FakeTodoRepository` возвращает `TaskEither.right` / `left` синхронно внутри `TaskEither`. Контейнер:
+
+```dart
+final container = ProviderContainer(
+  overrides: [
+    todoRepositoryProvider.overrideWithValue(fake),
+  ],
+);
+addTearDown(container.dispose);
+final todos = await container.read(todosProvider.future);
+```
+
+`read(...future)` бросит, если провайдер завершился `AsyncError`. Для ветки ошибки ожидаешь `throwsA`. Notifier формы: `container.read(controller.notifier).submit()` и смотришь `container.read(controller)`.
+
+Переопределяют тот провайдер, который является портом (`todoRepositoryProvider`), не каждый экранный провайдер по отдельности. Иначе тест проверяет мок вместо связки.
+
+Гонка: `submit` два раза подряд. `isSubmitting` выключает кнопку через `canSubmit`. Второй вызов всё равно защити в начале `submit`, если метод дёрнули из теста без кнопки.
+
+## 10. Типичные ошибки
+
+- `run()` в `build` виджета и `setState` на результат. Это второй источник правды рядом с провайдером.
+- Показать SnackBar из `fold` внутри `build`.
+- Считать `None` после SnackBar успехом и закрыть экран.
+- Кэшировать `Right` в переменной виджета и забыть `invalidate` после мутации — список врёт.
+- Тащить `Either` в параметр виджета «на всякий случай» и дублировать `fold` в десяти местах.
+
+## 11. Вопросы с собеса (кратко)
 
 1. TaskEither ↔ AsyncValue? — run + fold / throw Left.
 2. Где run? — notifier / use-case, не UI build.

@@ -34,6 +34,7 @@ void main() {
     '5_flutter_app_skills/networking': _networking,
     '5_flutter_app_skills/local_storage': _storage,
     '5_flutter_app_skills/local_notifications': _notifications,
+    '5_flutter_app_skills/push_notifications': _pushNotifications,
     '5_flutter_app_skills/permissions': _permissions,
     '5_flutter_app_skills/app_lifecycle': _lifecycle,
     '5_flutter_app_skills/deep_links': _deepLinks,
@@ -653,6 +654,30 @@ const _notifications = _Qa('Local Notifications', [
       'actionId пустой/null → tap; иначе id кнопки. Разный UX.'),
   _Item('Инициализация плагина?',
       'Один раз после binding; создать каналы до show; обработчики background/terminated отдельно продумать.'),
+]);
+
+const _pushNotifications = _Qa('Push Notifications', [
+  _Item('Чем push отличается от локального уведомления?',
+      'Local показывает само приложение через ОС. Push идёт с сервера через FCM; на iOS видимый баннер доставляет APNs.'),
+  _Item('Зачем FCM-токен и что делать на onTokenRefresh и logout?',
+      'Токен — адрес установки на устройстве. `onTokenRefresh` шлёт новый токен на бэкенд. На logout связку удаляют на сервере и вызывают `deleteToken`, иначе следующий аккаунт получит чужие сообщения.'),
+  _Item('Чем notification, data и both отличаются по показу баннера?',
+      'Notification в фоне рисует система, Dart при доставке не вызывается. Data молчит, его обрабатывает код. Both: система рисует текст, data доступна обработчику.'),
+  _Item('Какие callback в foreground, background и terminated?',
+      'Foreground — всегда `onMessage`. Background/terminated: notification → трей, data → `onBackgroundMessage`, both → трей и background-handler. Тап — отдельно.'),
+  _Item(
+      'Почему onBackgroundMessage — top-level функция с @pragma(\'vm:entry-point\'), зарегистрированная до runApp?',
+      'Обработчик живёт в другом изоляте. Замыкание и метод объекта туда не попадут, tree shaking вырежет функцию без pragma, поздняя регистрация после `runApp` пропускает сообщение.'),
+  _Item('Чем onMessageOpenedApp отличается от getInitialMessage?',
+      '`onMessageOpenedApp` — тап, когда процесс был в background. `getInitialMessage` — один раз при холодном старте из terminated. Оба читают одну data.'),
+  _Item('Почему в foreground баннер часто рисуют через flutter_local_notifications?',
+      'В foreground система баннер не показывает. `onMessage` получает payload, а видимый alert рисует локальный плагин со своим каналом и кнопками.'),
+  _Item('Зачем collapse key и чем high priority отличается от normal?',
+      'Одинаковый collapse key оставляет в трее последнее сообщение. `high` будит устройство (чат, звонок). `normal` можно отложить — для дайджеста. Маркетинг с high сажает батарею и упирается в квоты FCM.'),
+  _Item('Когда подписка на topic уместнее рассылки по токенам?',
+      'Топик — одна рассылка многим подписчикам (новости). Личное сообщение шлют на токен конкретного устройства.'),
+  _Item('Что нельзя класть в data payload?',
+      'Секреты, access token, лишние персональные данные. Payload виден в логах и у провайдера. Для навигации хватает id или внутреннего route.'),
 ]);
 
 const _permissions = _Qa('Permissions', [

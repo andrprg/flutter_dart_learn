@@ -93,7 +93,33 @@ onPressed: () async {
 
 `showDialog(context: context, useRootNavigator: true)` (по умолчанию часто true) кладёт диалог на **корневой** Navigator — поверх вложенных (вкладки, вложенные routes). Для диалога «на весь app» — root; для локального nested flow — `useRootNavigator: false`.
 
-## 7. Практика модуля
+## 7. Очередь SnackBar и время жизни
+
+`ScaffoldMessenger` показывает один SnackBar и держит очередь. Второй `showSnackBar`, пока первый на экране, встанет следующим, а не заменит его, если не вызвать `hideCurrentSnackBar`. Для ошибок «сохранить не удалось» часто прячут текущий, чтобы не копить три одинаковых плашки.
+
+`SnackBar` с `duration` сам исчезает. С `action` пользователь может не успеть — длительность увеличивают. `SnackBarAction.onPressed` вызывается и бар закрывается. Повторный показ из `build`, потому что `hasError == true`, откроет бесконечную очередь: показ — в колбэке или `ref.listen`, когда флаг **стал** true.
+
+Мессенджер ищут вверх по дереву. `ScaffoldMessenger` обычно стоит внутри `MaterialApp`. Вызов из диалога, который лежит на root navigator, всё ещё находит мессенджер приложения — в этом смысл отказа от `Scaffold.of`.
+
+## 8. Dialog, фокус и вложенные navigator
+
+`showDialog` пушит route. Системная кнопка Back вызывает `pop` и завершает Future значением `null`, если не передал результат. `PopScope` / `WillPopScope` на маршруте диалога перехватывает этот Back, когда закрытие надо запретить (несохранённая форма).
+
+`barrierDismissible: false` не блокирует Back само по себе на всех платформах одинаково предсказуемо для пользователя: на Android Back — это pop route. Для «только кнопками» обрабатывай и barrier, и pop.
+
+`useRootNavigator: true` кладёт диалог над вкладками. Закрытие: `Navigator.of(context, rootNavigator: true).pop(result)`. Если показать с root, а закрыть вложенным `Navigator.pop(context)`, закроется вкладка под диалогом, диалог останется. Бери `context`, который `builder` диалога получил, — он уже на нужном навигаторе. Это самый спокойный вариант.
+
+Bottom sheet — тоже route (`ModalBottomSheetRoute`). Клавиатура и `isScrollControlled: true` нужны, когда внутри поля: иначе лист короткий, поле под клавиатурой. `DraggableScrollableSheet` — лист, который тянется на всю высоту и скроллит контент.
+
+## 9. Типичные ошибки
+
+- Считать `null` из `showDialog` подтверждением. Это отмена.
+- `await showDialog` и дальше `setState` без `mounted`.
+- Показать диалог из `initState` напрямую — нет overlay. Только `addPostFrameCallback` или после кадра.
+- Два `ScaffoldMessenger` (свой на экране и от `MaterialApp`) — SnackBar уезжает не в тот.
+- Тяжёлая работа в `builder` диалога на каждый rebuild route.
+
+## 10. Практика модуля
 
 - `SnackConfig` / `buildSnackBar` / `showAppSnackBar`
 - `ConfirmDialog` + `showConfirm` + `needsHardBarrier`

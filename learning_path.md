@@ -148,11 +148,12 @@ flutter test 4_flutter_ui_basics/animations/animations_task_test.dart
 5. `5_flutter_app_skills/networking/networking_task.dart`
 6. `5_flutter_app_skills/local_storage/storage_task.dart`
 7. `5_flutter_app_skills/local_notifications/notifications_task.dart`
-8. `5_flutter_app_skills/permissions/permissions_task.dart`
-9. `5_flutter_app_skills/app_lifecycle/lifecycle_task.dart`
-10. `5_flutter_app_skills/deep_links/deep_links_task.dart`
-11. `5_flutter_app_skills/localization/localization_task.dart`
-12. `5_flutter_app_skills/errors_juniors/flutter_erros.dart`
+8. `5_flutter_app_skills/push_notifications/push_task.dart`
+9. `5_flutter_app_skills/permissions/permissions_task.dart`
+10. `5_flutter_app_skills/app_lifecycle/lifecycle_task.dart`
+11. `5_flutter_app_skills/deep_links/deep_links_task.dart`
+12. `5_flutter_app_skills/localization/localization_task.dart`
+13. `5_flutter_app_skills/errors_juniors/flutter_erros.dart`
 
 Что освоить:
 - `go_router`, redirect, query/path params;
@@ -162,6 +163,7 @@ flutter test 4_flutter_ui_basics/animations/animations_task_test.dart
 - HTTP-клиент, статусы, JSON, retry;
 - key-value storage, токен, настройки, миграция ключей;
 - локальные уведомления: каналы, payload, actions;
+- push: FCM-токен, notification/data, foreground/background/terminated;
 - permissions: статусы, request, settings, rationale;
 - app lifecycle: resume/pause, черновик, sync;
 - deep/universal links: parse, match routes, auth redirect;
@@ -180,6 +182,7 @@ flutter test 5_flutter_app_skills/focus/focus_node_task_test.dart
 flutter test 5_flutter_app_skills/networking/networking_task_test.dart
 flutter test 5_flutter_app_skills/local_storage/storage_task_test.dart
 flutter test 5_flutter_app_skills/local_notifications/notifications_task_test.dart
+flutter test 5_flutter_app_skills/push_notifications/push_task_test.dart
 flutter test 5_flutter_app_skills/permissions/permissions_task_test.dart
 flutter test 5_flutter_app_skills/app_lifecycle/lifecycle_task_test.dart
 flutter test 5_flutter_app_skills/deep_links/deep_links_task_test.dart
